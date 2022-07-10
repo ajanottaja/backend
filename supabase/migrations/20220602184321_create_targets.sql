@@ -21,6 +21,10 @@ create policy "Users can update own targets."
   on targets for update
   using ( auth.uid() = account );
 
+create policy "Users can delete own targets."
+  on targets for delete
+  using ( auth.uid() = account );
+
 create policy "Targets are viewable by users who created them."
   on targets for select
   using ( auth.uid() = account );
