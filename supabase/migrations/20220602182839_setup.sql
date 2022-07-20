@@ -5,7 +5,8 @@ create extension if not exists moddatetime schema extensions;
 create extension if not exists btree_gist schema extensions;
 
 -- Show intervals as ISO durations for easier parsing in frontends
-alter user postgres SET intervalstyle TO 'iso_8601';
+--alter user postgres SET intervalstyle TO 'iso_8601';
+
 
 -- Add new custom json converter for tstzrange
 
@@ -30,3 +31,29 @@ create or replace function tstzrange_to_json(tstzrange) returns json as $$
 $$ language sql;
 
 create cast (tstzrange as json) with function tstzrange_to_json(tstzrange) as assignment;
+
+
+-- Add a helper function to calculate the duration of a time range
+-- If the upper bound is not included, it is assumed to be now()
+
+create or replace function tsrange_to_interval(tsrange) returns interval as $$
+  select (
+    coalesce(
+      upper($1),
+      now()
+    ) - lower($1));
+$$ language sql;
+
+create cast (tsrange as interval) with function tsrange_to_interval(tsrange) as assignment;
+
+
+create or replace function tstzrange_to_interval(tstzrange) returns interval as $$
+  select (
+    coalesce(
+      upper($1),
+      now()
+    ) - lower($1));
+$$ language sql;
+
+create cast (tstzrange as interval) with function tstzrange_to_interval(tstzrange) as assignment;
+

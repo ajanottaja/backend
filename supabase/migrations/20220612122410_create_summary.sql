@@ -3,7 +3,7 @@
 create or replace function summary(title text, period text, date timestamptz)
   returns table (title text, period text, target interval, tracked interval, diff interval)
 as
-$body$
+$$
   with target as (
     select
       $1 title,
@@ -14,16 +14,16 @@ $body$
     where
       to_char(date, $2) = to_char($3, $2)
     group by
-      to_char(date, $2)
+      to_char(date, $2), $1
   ), tracked as (
     select
       $1 title,
-      to_char(date(min(lower(interval))), $2) period,
-      coalesce(sum(coalesce(upper(interval), now()) - lower(interval)), 'PT0'::interval) tracked
+      to_char(date(min(lower(t.tracked))), $2) period,
+      coalesce(sum(t.tracked::interval), 'PT0'::interval) tracked
     from
-      intervals
+      tracks t
     where
-      to_char(date(lower(interval)), $2) = to_char($3, $2)
+      to_char(date(lower(t.tracked)), $2) = to_char($3, $2)
   )
     
   select
@@ -36,7 +36,7 @@ $body$
     target
   join
     tracked on target.title = tracked.title
-$body$
+$$
 language sql;
 
 -- A View exposing summary values for day, week, month, year, and all time
