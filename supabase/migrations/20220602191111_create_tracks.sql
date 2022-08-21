@@ -60,8 +60,10 @@ select
 from
   tracks
 where
-  tracked @> now()
-  and account = auth.uid();
+  tracked @> now();
+
+alter view
+  tracks_active owner to authenticated;
 
 -- Convenience functions to start and stop an active track
 -- For start function we can get the account from the auth.uid helper function

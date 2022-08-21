@@ -4,8 +4,8 @@
 create function
   calendar(date_start date, duration interval, step interval) returns table (date date, target json, tracks json) as $$
 
-select  dates.dates                                                                             date
-      , case when targets is not null then json_build_object('id', targets.id, 'date', targets.date, 'duration', targets.duration) else null end        target
+select  dates.dates date
+      , case when targets is not null then json_build_object('id', targets.id, 'date', targets.date, 'duration', targets.duration::json) else null end target
       , case when count(tracks.id) > 0 then json_agg((json_build_object('id', tracks.id, 'tracked', tracks.tracked::json))) else '[]'::json end  tracks
 from generate_series(date_start, date_start + duration - '1 day'::interval, step) dates
          left join targets on targets.date = dates.date
@@ -21,9 +21,9 @@ $$ language sql;
 create function
   calendar(date_start date, date_stop date, step interval) returns table (date date, target json, tracks json) as $$
 
-select dates.dates                                                                             date
-     , json_build_object('id', targets.id, 'date', targets.date, 'duration', targets.duration)        target
-     , json_agg(json_build_object('id', tracks.id, 'tracked', tracks.tracked::json))           tracks
+select dates.dates date
+     , json_build_object('id', targets.id, 'date', targets.date, 'duration', targets.duration::json) target
+     , json_agg(json_build_object('id', tracks.id, 'tracked', tracks.tracked::json)) tracks
 from generate_series(date_start, date_stop, step) dates
          left join targets on targets.date = dates.date
          left join tracks on date(lower(tracks.tracked)) = dates.date

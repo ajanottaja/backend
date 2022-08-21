@@ -1,7 +1,7 @@
 -- Convenience function for generating summaries for various time periods
 -- Period: week 'yyyy-IW', month 'yyyy-mm', etc
-create
-or replace function summary(title text, period text, date timestamptz) returns table (title text, period text, target interval, tracked interval, diff interval) as $$
+create function
+  summary(title text, period text, date timestamptz) returns table (title text, period text, target interval, tracked interval, diff interval) as $$
 with target as (select $1 title
                      , to_char(date, $2) period
                      , coalesce(sum(duration), 'PT0'::interval) target
@@ -24,8 +24,8 @@ from target
 $$ language sql;
 
 -- A View exposing summary values for day, week, month, year, and all time
-create
-or replace view summary as
+create view
+  summary as
 select
   *
 from
@@ -50,3 +50,6 @@ select
   *
 from
   summary('all', 'AD', now());
+
+alter view
+  summary owner to authenticated;

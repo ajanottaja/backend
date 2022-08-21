@@ -6,11 +6,30 @@ create extension
 create extension
   if not exists btree_gist schema extensions;
 
--- Show intervals as ISO durations for easier parsing in frontends
-alter user
-  postgres
-set
-  intervalstyle to 'iso_8601';
+-- Add ISO8601 cast functions for timestamptz and intervals
+
+create function
+  timestamptz_to_iso_8601(timestamptz) returns json
+  as $$
+    select to_json($1)
+  $$ language sql;
+
+create cast
+  (timestamptz as json)
+with
+  function timestamptz_to_iso_8601(timestamptz) as assignment;
+
+create function
+  interval_to_iso_8601(interval) returns json
+  as $$
+    SET LOCAL intervalstyle = 'iso_8601';
+    select  to_json($1)
+  $$ language sql;
+
+create cast
+  (interval as json)
+with
+  function interval_to_iso_8601(interval) as assignment;
 
 -- Add new custom json converter for tstzrange
 create function

@@ -36,8 +36,6 @@ create view
         from
           targets
           full outer join tracks_summed ts on ts.date = targets.date
-        where
-          targets.account = auth.uid()
       )
     select
       diffed.date
@@ -55,3 +53,6 @@ create view
       diffed.date
     , diffed.diff
   );
+
+alter view
+  accumulated_stats owner to authenticated;
